@@ -1,6 +1,4 @@
 
-var Kernel = require("../kernel.js");
-
 Object.create = function create (O, Properties) {
   var o = {};
   Kernel.Reflect.setPrototype(o, O);

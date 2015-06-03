@@ -1,6 +1,4 @@
 
-var Kernel = require("../kernel.js");
-
 Object.getOwnPropertyNames = function getOwnPropertyNames (O) {
   var keys = Kernel.Reflect.ownKeys(O);
   var symbols = []

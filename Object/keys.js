@@ -1,6 +1,4 @@
 
-var Kernel = require("./kernel.js");
-
 Object.keys = function (object) {
   var ks1 = Kernel.Reflect.ownKeys(object);
   var ks2 = []

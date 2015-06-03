@@ -1,6 +1,4 @@
 
-Kernel = require("../../kernel.js");
-
 Function.prototype.call = function (thisArg) {
   var args = []
   for (var i=1; i<arguments.length; i++)

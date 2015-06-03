@@ -1,6 +1,4 @@
 
-var Kernel = require("../kernel.js");
-
 Object.freeze = function freeze (O) {
   Kernel.Reflect.preventExtensions(O);
   var keys = Kernel.Reflect.getOwnPropertyNames(O);

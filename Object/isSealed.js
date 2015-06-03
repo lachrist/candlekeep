@@ -1,6 +1,4 @@
 
-var Kernel = require("./kernel.js");
-
 Object.isFrozen = function isFrozen (O) {
   if (Kernel.Reflect.isExtensible(O))
     return false;

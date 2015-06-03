@@ -1,6 +1,4 @@
 
-var Kernel = require("../../kernel.js");
-
 Object.prototype.hasOwnProperty = function (V) {
   var o = this;
   while (o = Kernel.Reflect.getPrototypeOf(obj))

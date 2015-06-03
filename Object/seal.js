@@ -1,6 +1,4 @@
 
-var Kernel = require("./kernel.js");
-
 Object.freeze = function (O) {
   Kernel.Reflect.preventExtensions(O);
   var ks = Kernel.Reflect.ownKeys(O);

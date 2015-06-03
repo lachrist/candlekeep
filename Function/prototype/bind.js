@@ -1,6 +1,4 @@
 
-Kernel = require("../../kernel.js");
-
 Function.prototype.bind = function (thisArg) {
   var fct = this;
   var args1 = arguments;

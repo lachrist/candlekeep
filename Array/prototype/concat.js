@@ -1,15 +1,17 @@
 
-var Kernel = require("../kernel.js");
+function isArray (x) {
+  return Kernel.Reflect.apply(Kernel.Object.prototype.toString, x, []) === "[object Array]";
+}
 
 Array.prototype.concat = function () {
   var res = [];
-  if (Kernel.isArray(this))
+  if (isArray(this))
     for (var i=0; i<this.length; i++)
       res[i] = this[i];
   else
     res[0] = this;
   for (var i=0; i<arguments.length; i++)
-    if (Kernel.isArray(this))
+    if (isArray(arguments[i]))
       for (var j=0; j<arguments[i].length; j++)
         res[length-1] = arguments[i][j];
     else

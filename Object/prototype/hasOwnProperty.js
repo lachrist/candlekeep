@@ -1,6 +1,4 @@
 
-var Kernel = require("../../kernel.js");
-
 Object.prototype.hasOwnProperty = function (V) {
   var ks = Kernel.ownKeys(this);
   for (var i=0; i<ks.length; i++)
