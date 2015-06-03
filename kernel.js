@@ -87,10 +87,12 @@ var Kernel = {
   },
   String: {
     fromCodePoint: String.fromCodePoint
-  }
+  },
   Object: {
     prototype: {
       toString: Object.prototype.toString
     }
   }
 }
+
+var Helper = {}

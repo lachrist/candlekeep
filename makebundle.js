@@ -4,12 +4,13 @@ var fs = require("fs");
 var modules = [
   "(function (global) {",
   "'use-strict';",
-  fs.readFileSync(__dirname+"/kernel.js", {encoding:"utf8"})
+  fs.readFileSync(__dirname+"/kernel.js", {encoding:"utf8"}),
+  fs.readFileSync(__dirname+"/helper.js", {encoding:"utf8"})
 ];
 
-fs.readdirSync(__dirname).forEach(function (name) {
+fs.readdirSync(__dirname+"/global").forEach(function (name) {
   if (name !== ".git")
-    read(__dirname+"/"+name);
+    read(__dirname+"/global/"+name);
 });
 
 function read (dirname) {

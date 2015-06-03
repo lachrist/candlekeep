@@ -2,11 +2,31 @@
 'use-strict';
 
 // Dirty Polyfill of the needed methods of ES6 Reflect.
+// Legacy apply:
+// function (fct, thisArg, args) {
+//   var argcode = "(";
+//   if (args && args.length) {
+//     argcode += "args[0]"
+//     for (var i=1; i<args.length; i++)
+//       argcode += ",args["+i+"]"
+//   }
+//   argcode += ")";
+//   var key = "__swaggy__";
+//   if (thisArg && typeof thisArg === "object") {
+//     while (key in thisArg)
+//       key = "_"+key+"_";
+//     thisArg[key] = fct;
+//     var res = eval("thisArg[key]"+argcode);
+//     delete thisArg[key];
+//     return res;
+//   }
+//   return eval("fct"+argcode);
+// },
+
 (function () {
   if (typeof Reflect === "undefined") {
     var save = {
       apply: Function.prototype.apply,
-      defineProperty: Object.defineProperty,
       getOwnPropertyNames: Object.getOwnPropertyNames,
       getOwnPropertySymbols: Object.getOwnPropertySymbols
     };
@@ -17,25 +37,6 @@
         delete fct.__swaggy__;
         return res;
       },
-
-      //   var argcode = "(";
-      //   if (args && args.length) {
-      //     argcode += "args[0]"
-      //     for (var i=1; i<args.length; i++)
-      //       argcode += ",args["+i+"]"
-      //   }
-      //   argcode += ")";
-      //   var key = "__swaggy__";
-      //   if (thisArg && typeof thisArg === "object") {
-      //     while (key in thisArg)
-      //       key = "_"+key+"_";
-      //     thisArg[key] = fct;
-      //     var res = eval("thisArg[key]"+argcode);
-      //     delete thisArg[key];
-      //     return res;
-      //   }
-      //   return eval("fct"+argcode);
-      // },
       construct: function (fct, args) {
         var thisArg = {};
         Object.setPrototypeOf(thisArg, fct.prototype);
@@ -62,28 +63,7 @@
       setPrototypeOf: Object.setPrototypeOf
     };
   }
-} ())
-
-Reflect.apply(function (x,y) { console.log(this.a+x+y) }, {a:"yo"}, [1,2]);
-function f () {
-
-}
-f();
-
-function* idMaker(){
-    var index = 0;
-    while(true)
-        yield index++;
-}
-
-var gen = idMaker(); // "Generator { }"
-
-console.log(gen.next().value); // 0
-console.log(gen.next().value); // 1
-console.log(gen.next().value); // 2
-
-console.log("dony");
-
+} ());
 
 var Kernel = {
   Reflect: {
@@ -107,10 +87,21 @@ var Kernel = {
       valueOf: Boolean.prototype.valueOf
     }
   },
+  String: {
+    fromCodePoint: String.fromCodePoint
+  },
   Object: {
     prototype: {
       toString: Object.prototype.toString
     }
+  }
+}
+
+var Helper = {}
+
+Helper = {
+  isArray: function isArray (value) {
+    return Kernel.Reflect.apply(Kernel.Object.prototype.toString, value, []) === "[object Array]"
   }
 }
 
@@ -128,9 +119,7 @@ Array.from = function from (items, mapfn, thisArg) {
 };
 
 
-Array.isArray = function isArray (arg) {
-  return Kernel.Reflect.apply(Kernel.Object.prototype.toString, arg, []) === "[object Array]";
-};
+Array.isArray = Helper.isArray;
 
 
 Array.of = function of () {
@@ -141,24 +130,29 @@ Array.of = function of () {
 };
 
 
-function isArray (x) {
-  return Kernel.Reflect.apply(Kernel.Object.prototype.toString, x, []) === "[object Array]";
+Array.prototype.concat = function () {
+  var xs = [];
+  if (Helper.isArray(this))
+    for (var i=0; i<this.length; i++)
+      xs[xs.length] = this[i];
+  else
+    xs[0] = this;
+  for (var i=0; i<arguments.length; i++)
+    if (Helper.isArray(arguments[i]))
+      for (var j=0; j<arguments[i].length; j++)
+        xs[xs.length] = arguments[i][j];
+    else
+      xs[xs.length] = arguments[i];
+  return xs; 
 }
 
-Array.prototype.concat = function () {
-  var res = [];
-  if (isArray(this))
-    for (var i=0; i<this.length; i++)
-      res[i] = this[i];
-  else
-    res[0] = this;
-  for (var i=0; i<arguments.length; i++)
-    if (isArray(arguments[i]))
-      for (var j=0; j<arguments[i].length; j++)
-        res[length-1] = arguments[i][j];
-    else
-      res[length-1] = arguments[i];
-  return res; 
+
+Array.prototype.filter = function (callbackfn, thisArg) {
+  var xs = [];
+  for (var i=0; i<this.length; i++)
+    if (Kernel.Reflect.apply(callbackfn, thisArg, [this[i], i, this]))
+      xs[xs.length] = this[i];
+  return xs;
 }
 
 
@@ -167,6 +161,20 @@ Array.prototype.map = function (callbackfn, thisArg) {
   for (var i=0; i<this.length; i++)
     res[i] = Kernel.Reflect.apply(callbackfn, thisArg, [this[i], i, this]);
   return res;
+}
+
+
+Array.prototype.pop = function () {
+  var last = this[this.length-1];
+  this.length = this.length-1;
+  return last;
+}
+
+
+Array.prototype.push = function () {
+  for (var i=0; i<arguments.length; i++)
+    this[this.length] = arguments[i];
+  return this.length;
 }
 
 
@@ -198,7 +206,7 @@ Function.prototype.bind = function (thisArg) {
 Function.prototype.call = function (thisArg) {
   var args = []
   for (var i=1; i<arguments.length; i++)
-    args[i-1] = arguments[i-1];
+    args[i-1] = arguments[i];
   return Kernel.Reflect.apply(this, thisArg, args);
 }
 
@@ -213,7 +221,7 @@ Object.assign = function assign (target) {
 
 Object.create = function create (O, Properties) {
   var o = {};
-  Kernel.Reflect.setPrototype(o, O);
+  Kernel.Reflect.setPrototypeOf(o, O);
   for (var k in Properties)
     Kernel.Reflect.defineProperty(o, k, Properties[k]);
   return o;
@@ -421,5 +429,11 @@ Reflect.has = function has (target, propertyKey) {
 Reflect.set = function set (target, propertyKey, V, receiver) {
   return target[propertyKey] = V;
 }
+
+
+String.fromCharCode = function fromCharCode () {
+  return Kernel.Reflect.apply(Kernel.String.fromCodePoint, null, arguments);
+}
+
 
 } (typeof exports !== 'undefined' ? global : this));

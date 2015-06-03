@@ -1,0 +1,2 @@
+
+Array.isArray = Helper.isArray;
